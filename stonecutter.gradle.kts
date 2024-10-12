@@ -12,16 +12,13 @@ stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chisele
 	ofTask("buildAndCollect")
 }
 
-/*
 // Publishes every version
 stonecutter registerChiseled tasks.register("chiseledPublishMods", stonecutter.chiseled) {
 	group = "project"
 	ofTask("publishMods")
 }
-*/
 
 stonecutter configureEach {
 	/* https://stonecutter.kikugie.dev/ */
-	swap("mod_version", "\"${property("mod.version")}\";")
 	dependency("fapi", project.property("deps.fabric_api").toString())
 }

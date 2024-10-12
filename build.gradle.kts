@@ -81,14 +81,13 @@ tasks.register<Copy>("buildAndCollect") {
 
 publishMods {
 	file = tasks.remapJar.get().archiveFile
-	additionalFiles.from(tasks.remapSourcesJar.get().archiveFile)
 	displayName = "${mod.version} for ${property("mod.mc_title")}"
 	version = "${mod.version}+$mcVersion"
 	changelog = rootProject.file("CHANGELOG.md").readText()
 	type = STABLE
 	modLoaders.add("fabric")
 
-	dryRun = true //providers.environmentVariable("MODRINTH_TOKEN").getOrNull()
+	dryRun = !providers.environmentVariable("MODRINTH_TOKEN").isPresent
 
 	modrinth {
 		projectId = property("publish.modrinth").toString()

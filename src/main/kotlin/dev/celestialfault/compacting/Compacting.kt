@@ -12,6 +12,7 @@ import net.minecraft.client.gui.hud.ChatHudLine
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
+import kotlin.time.Duration.Companion.seconds
 
 object Compacting : ClientModInitializer {
 	val LOG: Logger = LogUtils.getLogger()
@@ -60,13 +61,13 @@ object Compacting : ClientModInitializer {
 		divided.last().dividers.add(lastDivider)
 	}
 
-	@JvmStatic
-	fun compact(line: ChatHudLine): ChatHudLine {
-		if(!Config.enabled) return line
-		prune()
-
-		val message = messages[line.content] ?: Message(line).also { if(!it.isDivider) messages.put(line.content, it) }
-
+	private fun processDivider(message: Message) {
+		currentDividerSet?.let {
+			if(it.first().lastSeen.elapsedSince() > 5.seconds) {
+				LOG.warn("Second divider wasn't received after 5 seconds!")
+				currentDividerSet = null
+			}
+		}
 		if(message.isDivider) {
 			dividers.add(message)
 			if(currentDividerSet == null) {
@@ -77,6 +78,15 @@ object Compacting : ClientModInitializer {
 			}
 		}
 		currentDividerSet?.add(message)
+	}
+
+	@JvmStatic
+	fun compact(line: ChatHudLine): ChatHudLine {
+		if(!Config.enabled) return line
+		prune()
+
+		val message = messages[line.content] ?: Message(line).also { if(!it.isDivider) messages.put(line.content, it) }
+		processDivider(message)
 
 		message.timesSeen++
 		message.lastSeen = Timestamp.now()
