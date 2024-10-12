@@ -1,0 +1,11 @@
+{
+  "compacting.title": "Compacting",
+  "compacting.enable": "Enable",
+  "compacting.enable.desc": "Determines if the mod should compact chat messages",
+  "compacting.timeout": "Compact duration",
+  "compacting.timeout.desc.line1": "The duration in which repeated messages should be compacted",
+  "compacting.timeout.desc.line2": "Note that longer durations may negatively impact performance and increase memory usage",
+  "compacting.remove_blank": "Remove empty messages",
+  "compacting.remove_blank.desc": "Removes messages that are empty or consist entirely of spaces",
+  "compacting.seconds": "%s seconds"
+}

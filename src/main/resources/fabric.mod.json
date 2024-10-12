@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "compacting",
+  "version": "${version}",
+  "name": "Compacting",
+  "description": "An intelligent compact chat mod",
+  "authors": ["celeste"],
+  "contact": {
+    "sources": "https://github.com/celestialfault/compacting",
+    "issues": "https://github.com/celestialfault/compacting/issues"
+  },
+  "license": "zlib",
+  "icon": "assets/compacting/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      {
+        "value": "dev.celestialfault.compacting.Compacting",
+        "adapter": "kotlin"
+      }
+    ],
+    "modmenu": [
+      {
+        "value": "dev.celestialfault.compacting.config.ModMenuImpl",
+        "adapter": "kotlin"
+      }
+    ]
+  },
+  "mixins": ["compacting.mixins.json"],
+  "depends": {
+    "minecraft": "${mcdep}",
+    "fabricloader": ">=0.15",
+    "fabric-language-kotlin": "*"
+  },
+  "recommends": {
+    "fabric-api": "*",
+    "modmenu": "*",
+    "yet_another_config_lib_v3": "*"
+  },
+  "conflicts": {
+    "compact-chat": "*"
+  }
+}
