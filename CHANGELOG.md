@@ -1,3 +1,1 @@
-## Added
-
-- Support for versions 1.19.4-1.20.6
+Added support for versions 1.19.4 through 1.20.6
