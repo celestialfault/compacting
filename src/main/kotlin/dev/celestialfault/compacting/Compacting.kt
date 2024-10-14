@@ -8,7 +8,6 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.hud.ChatHudLine
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.slf4j.Logger
@@ -16,8 +15,8 @@ import kotlin.time.Duration.Companion.seconds
 
 object Compacting : ClientModInitializer {
 	val LOG: Logger = LogUtils.getLogger()
+
 	private val messages: MutableMap<Text, Message> = mutableMapOf()
-	private val dividers: MutableList<Message> = mutableListOf()
 	private var currentDividerSet: MutableList<Message>? = null
 
 	override fun onInitializeClient() {
@@ -35,22 +34,14 @@ object Compacting : ClientModInitializer {
 
 	private fun prune() {
 		messages.values.removeIf(Message::isOld)
-		dividers.removeIf(Message::isOld)
 	}
 
 	private fun remove(message: Message) {
 		var hud = MinecraftClient.getInstance().inGameHud.chatHud as ChatHudAccessor
-		hud.messages.remove(message.lastLine)
+		message.lastLine?.let(hud.messages::remove)
 		message.lastVisible.forEach(hud.visibleMessages::remove)
 		message.dividers.forEach(this::remove)
 		message.dividers.clear()
-		dividers.remove(message)
-	}
-
-	private fun find(line: ChatHudLine): Message? {
-		// note that we can't actually use a hashmap lookup here as we modify the text to add the compact count,
-		// changing the hash and therefore breaking such a lookup.
-		return messages.values.firstOrNull { it.lastLine === line } ?: dividers.firstOrNull { it.lastLine === line }
 	}
 
 	private fun associateDividers(lastDivider: Message) {
@@ -69,7 +60,6 @@ object Compacting : ClientModInitializer {
 			}
 		}
 		if(message.isDivider) {
-			dividers.add(message)
 			if(currentDividerSet == null) {
 				currentDividerSet = mutableListOf()
 			} else {
@@ -81,36 +71,27 @@ object Compacting : ClientModInitializer {
 	}
 
 	@JvmStatic
-	fun compact(line: ChatHudLine): ChatHudLine {
-		if(!Config.enabled) return line
+	fun compact(text: Text): Message? {
+		if(!Config.enabled) return null
 		prune()
 
-		val message = messages[line.content] ?: Message(line).also { if(!it.isDivider) messages.put(line.content, it) }
+		var message: Message? = messages[text]
+		if(message == null) {
+			message = Message(text.copy())
+			if(!message.isDivider) messages.put(text, message)
+		}
 		processDivider(message)
 
 		message.timesSeen++
 		message.lastSeen = Timestamp.now()
-		if(!message.shouldCompact) {
-			message.lastLine = line
-			return line
-		}
 
-		remove(message)
-		val newLine = ChatHudLine(line.creationTick, message.textWithCounter, line.signature, line.indicator)
-		message.lastLine = newLine
-		message.lastVisible.clear()
-		return newLine
-	}
-
-	@JvmStatic
-	fun associate(line: ChatHudLine, visible: ChatHudLine.Visible) {
-		find(line)?.lastVisible?.add(visible)
+		if(message.shouldCompact) remove(message)
+		return message
 	}
 
 	@JvmStatic
 	fun clear() {
 		messages.clear()
-		dividers.clear()
 		currentDividerSet = null
 	}
 }

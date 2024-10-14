@@ -9,9 +9,8 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import kotlin.time.Duration.Companion.seconds
 
-internal class Message(val text: MutableText, var lastLine: ChatHudLine) {
-	constructor(line: ChatHudLine) : this(line.content.copy(), line)
-
+class Message(val text: MutableText) {
+	var lastLine: ChatHudLine? = null
 	val lastVisible: MutableList<ChatHudLine.Visible> = mutableListOf()
 	val dividers: MutableList<Message> = mutableListOf()
 
@@ -27,6 +26,7 @@ internal class Message(val text: MutableText, var lastLine: ChatHudLine) {
 		.copy()
 		.append(Text.literal(" ($timesSeen)").setStyle(Style.EMPTY.withExclusiveFormatting(Formatting.GRAY)))
 
+	@get:JvmName("shouldCompact")
 	val shouldCompact: Boolean
 		get() = timesSeen > 1 && !isDivider
 
